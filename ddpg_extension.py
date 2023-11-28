@@ -256,8 +256,10 @@ class DDPGExtension(DDPGAgent):
         print(filepath)
         
         d = torch.load(filepath)
-        self.q.load_state_dict(d['q'])
-        self.q_target.load_state_dict(d['q_target'])
+        self.q1.load_state_dict(d['q1'])
+        self.q1_target.load_state_dict(d['q1_target'])
+        self.q2.load_state_dict(d['q2'])
+        self.q2_target.load_state_dict(d['q2_target'])
         self.pi.load_state_dict(d['pi'])
         self.pi_target.load_state_dict(d['pi_target'])
     
@@ -266,15 +268,16 @@ class DDPGExtension(DDPGAgent):
         filepath=str(self.model_dir)+'/model_parameters_'+str(self.seed)+'.pt'
         
         torch.save({
-            'q': self.q.state_dict(),
-            'q_target': self.q_target.state_dict(),
+            'q1': self.q1.state_dict(),
+            'q1_target': self.q1_target.state_dict(),
+            'q2': self.q2.state_dict(),
+            'q2_target': self.q2_target.state_dict(),
             'pi': self.pi.state_dict(),
             'pi_target': self.pi_target.state_dict()
         }, filepath)
         print("Saved model to", filepath, "...")
-        
+       
     def record(self, state, action, next_state, reward, done):
         """ Save transitions to the buffer. """
         self.buffer_ptr += 1
         self.buffer.add(state, action, next_state, reward, done)
-        
