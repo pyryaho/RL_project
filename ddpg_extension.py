@@ -25,8 +25,15 @@ class DDPGExtension(DDPGAgent):
         self.lr=self.cfg.lr
         # added
         self.buffer_size = self.cfg.buffer_size
-        self.d = 2;
-        self.d_counter = 0;
+        self.d = 2
+        self.d_counter = 0
+        
+        #for the OU-process
+        self.prev_noise = 0. * np.ones(self.action_dim)
+        self.alpha = 0.2 #choose a good value
+        self.beta = 0.2
+        self.sigma = 0.3 #choose a good value
+        self.wiener = 0. * np.ones(self.action_dim)
         
         # Initialize one actor and two critics
         self.pi = Policy(state_dim, self.action_dim, self.max_action).to(self.device)
@@ -151,7 +158,7 @@ class DDPGExtension(DDPGAgent):
         x = torch.from_numpy(observation).float().to(self.device)
 
         # The exploration noise added to the action follows a Gaussian distribution (mean is 0 and standard deviation is 0.3)
-        expl_noise = 0.3 * self.max_action # the stddev of the expl_noise if not evaluation
+        # expl_noise = 0.3 * self.max_action # the stddev of the expl_noise if not evaluation
             
         # TODO:
         ########## Your code starts here. ##########
@@ -162,11 +169,19 @@ class DDPGExtension(DDPGAgent):
             action = self.pi.forward(x)
         else:
             action = self.pi.forward(x)
-            action += expl_noise*torch.randn_like(action)
+             # OU-noise
+            x = self.prev_noise
+            W = self.wiener + np.array([np.random.randn() for i in range(len(x))])
+            # the 
+            x_next = x - self.beta * (x-self.alpha) + self.sigma * (W-self.wiener)
+            self.wiener = W
+            self.prev_noise = x_next    
+            action += x_next
+            # action += expl_noise*torch.randn_like(action)
 
         ########## Your code ends here. ##########
         # clip the action
-        return action.clip(-50,50), {} # just return a positional value
+        return action.clip(-1,1), {} # just return a positional value
 
         
     def train_iteration(self):
