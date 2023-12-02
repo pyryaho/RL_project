@@ -28,11 +28,11 @@ class DDPGExtension(DDPGAgent):
         self.d = 2
         self.d_counter = 0
         
-        #for the OU-process
+        # for the OU-process
         self.prev_noise = 0. * np.ones(self.action_dim)
-        self.alpha = 0.2 #choose a good value
-        self.beta = 0.2
-        self.sigma = 0.3 #choose a good value
+        self.alpha = 0.
+        self.beta = 0.2 
+        self.sigma = 0.3
         self.wiener = 0. * np.ones(self.action_dim)
         
         # Initialize one actor and two critics
@@ -49,7 +49,6 @@ class DDPGExtension(DDPGAgent):
         self.q2_optim = torch.optim.Adam(self.q2.parameters(), lr=float(self.lr))
         
         self.buffer = ReplayBuffer(state_shape, self.action_dim, max_size=int(float(self.buffer_size)))
-        #
         
         self.batch_size = self.cfg.batch_size
         self.gamma = self.cfg.gamma
